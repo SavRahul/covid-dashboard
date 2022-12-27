@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css' rel='stylesheet' />
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        #nav-bar {
+            background: goldenrod;
+            display: flex;
+            list-style-type: none;
+            align-items: center;
+            justify-content: space-evenly;
+            height: 5vh;
+            width: 100%;
+        }
+
+        #nav-bar>li>button {
+            background: transparent;
+            color: rgba(0, 0, 0, 0.705);
+            border: none;
+            font-weight: bolder;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.699);
+        }
+
+        #nav-bar>li>input {
+            background: transparent;
+            border: 2px solid black;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bolder;
+            outline: none;
+            height: 3.5vh;
+            width: 20vw;
+        }
+
+        #map {
+            width: 100%;
+            height: 95vh;
+        }
+
+        .marker {
+            border: 1px solid #e664648c;
+            opacity: .4;
+            background-image: radial-gradient(#e66465, transparent);
+            background-size: cover;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="nav-bar">
+        <li><button>World Data</button></li>
+        <li><button id="IndianData">Indian Data</button></li>
+        <li><input type="text" placeholder="Search"></li>
+    </ul>
+    <div id='map'></div>
+
+</body>
+<script>
+    console.log("hi");
+    let States = document.getElementById("States");
+    let IndianDataBtn = document.getElementById("IndianData");
+    IndianDataBtn.addEventListener("click", () => {
+        console.log("button clicked!");
+        fetch('https://data.covid19india.org/data.json').then(response => response.json())
+            .then(data => {
+                fetch('./IndianStates.json').then(response => response.json())
+                    .then(LongLatdata => {
+                        data.statewise.forEach((element, index) => {
+                            element.longitude = LongLatdata[index].longitude;
+                            element.latitude = LongLatdata[index].latitude;
+
+                            //add to mapbox
+                            let size = 5;
+                            const el = document.createElement('div');
+                            el.className = 'marker';
+                            el.style = `width:${size}px ;height:${size}px ;`
+                            var marker = new mapboxgl.Marker({
+                                dragable: false
+                            });
+                            marker.setLngLat([element.longitude, element.latitude]).addTo(map);
+                            map.flyTo({
+                                // These options control the ending camera position: centered at
+                                // the target, at zoom level 9, and north up.
+                                center: [78.9629, 20.5937],
+                                zoom: 3.5,
+                                bearing: 0,
+
+                                // These options control the flight curve, making it move
+                                // slowly and zoom out almost completely before starting
+                                // to pan.
+                                speed: 0.8, // make the flying slow
+                                curve: 1, // change the speed at which it zooms out
+
+                                // This can be any easing function: it takes a number between
+                                // 0 and 1 and returns another number between 0 and 1.
+                                easing: (t) => t,
+
+                                // this animation is considered essential with respect to prefers-reduced-motion
+                                essential: true
+                            });
+                        if(index==0|| index==31)
+                        el.style.display="none";
+                        });
+                        console.log(data.statewise);
+                    })
+            })
+    })
+
+</script>
+
+<script src=' https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js'></script>
+<script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoicHJhdGlrLTQ0ODgiLCJhIjoiY2t0N2JhOXFpMHFwejJvcndrMmoxbHhvNCJ9.0_9baA8PIHqPMPD28VxiVA';
+    const map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/dark-v10',
+        zoom: 1,
+        center: [78.9629, 20.5937]
+    });
+</script>
+
+</html>
